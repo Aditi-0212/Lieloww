@@ -1,0 +1,27 @@
+text,label,category,source_model,final_label
+She saw my message and didn’t reply I think I annoyed her,delusional,overthinking,human,delusional
+I didn’t prepare well for the exam I might actually fail,realistic,logical_reasoning,human,realistic
+He sounded a bit off today maybe he's just tired not upset with me,realistic,logical_reasoning,human,realistic
+If they didn’t invite me they probably don’t like me,delusional,emotional_bias,human,delusional
+I made a mistake in the presentation but overall it went fine,realistic,logical_reasoning,human,realistic
+They laughed after I spoke they must be making fun of me,delusional,overthinking,human,delusional
+I’ve been practicing consistently so improvement will take time,realistic,logical_reasoning,human,realistic
+She didn’t like my post maybe she’s ignoring me on purpose,delusional,overthinking,human,delusional
+I feel anxious but there’s no real reason for it,delusional,emotional_bias,human,delusional
+I didn’t get selected this time but I can improve and try again,realistic,logical_reasoning,human,realistic
+Maybe they didn’t reply because they are busy not because they dislike me,realistic,logical_reasoning,human,realistic
+I think I always mess up interviews but maybe I just need more practice,realistic,emotional_bias,human,realistic
+If one person ignores me it means everyone will eventually,delusional,overthinking,human,delusional
+I feel like people judge me but I don’t have proof,delusional,emotional_bias,human,delusional
+I didn’t do great but it wasn’t a complete failure either,realistic,logical_reasoning,human,realistic
+Sometimes I assume the worst without knowing facts,delusional,overthinking,human,delusional
+I might be overthinking this situation,delusional,overthinking,human,delusional
+I should probably confirm instead of assuming things,realistic,logical_reasoning,human,realistic
+Even though there is no evidence I strongly feel they dislike me,delusional,emotional_bias,human,delusional
+My assumption is based on past experiences but may not apply here,realistic,logical_reasoning,human,realistic
+I feel something is wrong but I can’t logically justify it,delusional,emotional_bias,human,delusional
+The outcome seems uncertain but not necessarily negative,realistic,logical_reasoning,human,realistic
+I am connecting unrelated events to justify my fear,delusional,overthinking,human,delusional
+This conclusion might be biased by my emotions rather than facts,realistic,logical_reasoning,human,realistic
+Just because it happened once doesn’t mean it will always happen,realistic,logical_reasoning,human,realistic
+I am assuming intent without any direct evidence,delusional,overthinking,human,delusional
