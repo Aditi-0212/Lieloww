@@ -1298,7 +1298,7 @@ async function generateExcuse() {
   document.getElementById('eg-thinking').classList.add('active');
 
   try {
-    const res = await fetch('http://localhost:8000/generate-excuse', {
+    const res = await fetch('https://lieloww.onrender.com/generate-excuse', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ scenario, relationship, seriousness, tone })
@@ -1391,7 +1391,7 @@ async function checkBelievability() {
   const excuse = document.getElementById('bel-excuse').value.trim();
   if (!excuse) { showToast('Enter an excuse first 💀'); return; }
 
-  const res = await fetch('http://localhost:8000/check-believability', {
+  const res = await fetch('https://lieloww.onrender.com/check-believability', {
   method:'POST', headers:{'Content-Type':'application/json'},
   body: JSON.stringify({excuse})
 });
@@ -1461,7 +1461,7 @@ async function analyzeDelusion() {
   document.getElementById('del-thinking').classList.add('active');
 
   try {
-    const res = await fetch('http://localhost:8000/analyze-delusion', {
+    const res = await fetch('https://lieloww.onrender.com/analyze-delusion', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ text: input, mode: currentMode })
@@ -1600,7 +1600,7 @@ async function analyzeRedFlag() {
   document.getElementById('rf-results').classList.add('hidden');
 
   try {
-    const res = await fetch('http://localhost:8000/analyze-redflag', {
+    const res = await fetch('https://lieloww.onrender.com/analyze-redflag', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: input })
@@ -1761,7 +1761,7 @@ async function getTimeline() {
   textEl.style.display  = 'none';
 
   try {
-    const res  = await fetch('http://localhost:8000/situationship-timeline', {
+    const res  = await fetch('https://lieloww.onrender.com/situationship-timeline', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ score, flagged_questions: flagged })
     });
@@ -1793,7 +1793,7 @@ async function getTalkScript() {
   content.style.display  = 'none';
 
   try {
-    const res  = await fetch('http://localhost:8000/situationship-talk-script', {
+    const res  = await fetch('https://lieloww.onrender.com/situationship-talk-script', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ score, flagged_questions: flagged })
     });
@@ -1876,7 +1876,7 @@ function chatExcuse() {
   historyEl.appendChild(typing);
   historyEl.scrollTop = historyEl.scrollHeight;
  
-  fetch('http://localhost:8000/chat-excuse', {
+  fetch('https://lieloww.onrender.com/chat-excuse', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ messages: excuseChatHistory })
@@ -1988,7 +1988,7 @@ function replyDelusion() {
   historyEl.appendChild(typing);
   historyEl.scrollTop = historyEl.scrollHeight;
  
-  fetch('http://localhost:8000/chat-delusion', {
+  fetch('https://lieloww.onrender.com/chat-delusion', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ messages: delusionChatHistory, mode: currentMode })
@@ -2042,7 +2042,7 @@ async function submitSituationship() {
   tipsEl.innerHTML = '';
  
   try {
-    const res = await fetch('http://localhost:8000/situationship-tips', {
+    const res = await fetch('https://lieloww.onrender.com/situationship-tips', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ score, flagged_questions: flagged })
