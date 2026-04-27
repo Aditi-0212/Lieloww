@@ -1148,6 +1148,26 @@
         <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:12px;">🧭 Your Survival Action Plan</div>
         <div id="situ-tips-loading" class="alert alert-info" style="display:none;">⏳ AI is crafting your action plan...</div>
         <div id="situ-tips" style="display:flex;flex-direction:column;gap:10px;"></div>
+
+      <!-- Timeline + Talk Script buttons -->
+      <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;">
+        <button class="btn btn-outline" onclick="getTimeline()" id="situ-timeline-btn">🔮 Predict My Future</button>
+        <button class="btn btn-outline" onclick="getTalkScript()" id="situ-talk-btn">💬 Generate The Talk Script</button>
+      </div>
+
+      <!-- Timeline result -->
+      <div id="situ-timeline-section" class="hidden" style="margin-top:20px;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:10px;">🔮 Your Situationship Ending</div>
+        <div id="situ-timeline-loading" class="alert alert-info" style="display:none;">⏳ The oracle is seeing your future...</div>
+        <div id="situ-timeline-text" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;font-size:0.9rem;line-height:1.7;color:var(--text);display:none;"></div>
+      </div>
+
+      <!-- Talk Script result -->
+      <div id="situ-script-section" class="hidden" style="margin-top:20px;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:10px;">💬 The Talk Script</div>
+        <div id="situ-script-loading" class="alert alert-info" style="display:none;">⏳ Writing your script...</div>
+        <div id="situ-script-content" style="display:none;flex-direction:column;gap:10px;"></div>
+      </div>
       </div>
     </div>
   </div>
@@ -1579,57 +1599,62 @@ async function analyzeRedFlag() {
   arena.innerHTML = '';
   document.getElementById('rf-results').classList.add('hidden');
 
-  // Call your real backend
-  const res = await fetch('http://localhost:8000/analyze-redflag', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: input })
-  });
-  const data = await res.json();
+  try {
+    const res = await fetch('http://localhost:8000/analyze-redflag', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: input })
+    });
+    const data = await res.json();
 
-  // Show each model's result
-  for (const [modelName, result] of Object.entries(data.models)) {
-    await delay(300);
-    const label = result.pred === 1 ? '🚩 Red Flag' : '✅ Green Flag';
-    const card = document.createElement('div');
-    card.className = 'result-card';
-    card.innerHTML = `
-      <div class="result-header">
-        <span class="model-name">${modelName}</span>
-        <span class="score-badge">${result.conf.toFixed(2)}</span>
-      </div>
-      <div class="result-text">${label}</div>`;
-    arena.appendChild(card);
+    for (const [modelName, result] of Object.entries(data.models)) {
+      await delay(300);
+      const label = result.pred === 1 ? '🚩 Red Flag' : '✅ Green Flag';
+      const card = document.createElement('div');
+      card.className = 'result-card';
+      card.innerHTML = `
+        <div class="result-header">
+          <span class="model-name">${modelName}</span>
+          <span class="score-badge">${result.conf.toFixed(2)}</span>
+        </div>
+        <div class="result-text">${label}</div>`;
+      arena.appendChild(card);
+    }
+
+    const isRed = data.best_pred === 1;
+    const score = Math.round(data.best_conf * 100);
+
+    const verdictEl = document.getElementById('rf-verdict-card');
+    if (isRed) {
+      verdictEl.className = 'alert alert-danger';
+      verdictEl.textContent = '🚩 RED FLAG DETECTED — Bro… run 💀';
+    } else {
+      verdictEl.className = 'alert alert-success';
+      verdictEl.textContent = '✅ GREEN FLAG — Green flag energy 🌳';
+    }
+
+    document.getElementById('rf-confidence').textContent = data.best_conf.toFixed(2);
+    document.getElementById('rf-best-model').textContent = data.best_model;
+    document.getElementById('rf-toxicity').style.width = score + '%';
+    document.getElementById('rf-toxicity-label').textContent = `Intensity Score: ${score}/100`;
+
+    // Hide overlay BEFORE typewrite so it doesn't look frozen
+    document.getElementById('rf-thinking').classList.remove('active');
+    document.getElementById('rf-results').classList.remove('hidden');
+    await typewrite('rf-explanation', data.explanation, 18);
+
+    showToast(isRed ? 'Bro… run 💀' : 'Green flag energy 🌳');
+
+  } catch (err) {
+    console.error(err);
+    showToast('Backend offline — is your server running? 💀');
+  } finally {
+    // Always runs no matter what — overlay always disappears
+    document.getElementById('rf-thinking').classList.remove('active');
+    btn.disabled = false;
+    document.getElementById('rf-input').disabled = false;
   }
-
-  const isRed = data.best_pred === 1;
-  const score = Math.round(data.best_conf * 100);
-
-  // Verdict
-  const verdictEl = document.getElementById('rf-verdict-card');
-  if (isRed) {
-    verdictEl.className = 'alert alert-danger';
-    verdictEl.textContent = '🚩 RED FLAG DETECTED — Bro… run 💀';
-  } else {
-    verdictEl.className = 'alert alert-success';
-    verdictEl.textContent = '✅ GREEN FLAG — Green flag energy 🌳';
-  }
-
-  document.getElementById('rf-confidence').textContent = data.best_conf.toFixed(2);
-  document.getElementById('rf-best-model').textContent = data.best_model;
-  document.getElementById('rf-toxicity').style.width = score + '%';
-  document.getElementById('rf-toxicity-label').textContent = `Intensity Score: ${score}/100`;
-
-  // Real explanation from your backend
-  document.getElementById('rf-results').classList.remove('hidden');
-  await typewrite('rf-explanation', data.explanation, 18);
-
-  document.getElementById('rf-thinking').classList.remove('active');
-  btn.disabled = false;
-  document.getElementById('rf-input').disabled = false;
-  showToast(isRed ? 'Bro… run 💀' : 'Green flag energy 🌳');
 }
-
 function submitQuiz() {
   const score = Object.values(rfAnswers).filter(v => v === 'Yes').length;
   const total = RF_QUESTIONS.length;
@@ -1655,13 +1680,22 @@ function submitQuiz() {
 // ============================================================
 
 const SITU_QUESTIONS = [
-  { key:'avoid_label', q:'Avoids labeling the relationship?' },
-  { key:'cancels', q:'Cancels plans often?' },
-  { key:'mixed_signals', q:'Gives mixed signals?' },
-  { key:'effort', q:'Puts in low effort?' },
-  { key:'future', q:'Avoids talking about the future?' }
+  { key:'avoid_label',                q:'Do they avoid labeling the relationship?' },
+  { key:'cancels',                    q:'Do they cancel plans often?' },
+  { key:'inconsistent_communication', q:'Is communication inconsistent?' },
+  { key:'last_minute_plans',          q:'Do they make last-minute plans only?' },
+  { key:'mixed_signals',              q:'Do they give mixed signals?' },
+  { key:'emotional_imbalance',        q:'Is there an emotional imbalance?' },
+  { key:'lack_of_effort',             q:'Do they put in low effort?' },
+  { key:'no_future_talk',             q:'Do they avoid talking about the future?' },
+  { key:'feels_one_sided',            q:'Does it feel one-sided?' },
+  { key:'avoids_serious_talk',        q:'Do they avoid serious conversations?' },
+  { key:'private_meet',               q:'Do they only meet privately?' },
+  { key:'possessive_no_label',        q:'Are they possessive without a label?' },
+  { key:'talks_to_others',            q:'Are they actively talking to other people?' },
+  { key:'hot_and_cold',               q:'Are they hot and cold?' },
+  { key:'gaslighting',                q:'Do they manipulate or gaslight you?' }
 ];
-
 let situAnswers = {};
 
 function initSitu() {
@@ -1697,11 +1731,96 @@ function situSelect(key, val) {
 
 function submitSituationship() {
   const score = Object.values(situAnswers).filter(v => v==='Yes').length;
-  document.getElementById('situ-score').textContent = score + '/' + SITU_QUESTIONS.length;
+  const total = SITU_QUESTIONS.length;
+  document.getElementById('situ-score').textContent = score + '/' + total;
+  const pct = Math.round((score / total) * 100);
+
   const verdict = document.getElementById('situ-verdict');
-  if (score >= 3) { verdict.className='alert alert-danger'; verdict.textContent='💔 This ain\'t it. You deserve a real relationship.'; }
-  else { verdict.className='alert alert-success'; verdict.textContent='💚 Has potential. Keep communicating.'; }
+  if (score >= 12)      { verdict.className='alert alert-danger';  verdict.textContent="🚨 BROOO THIS IS A RED FOREST 🌲🔥 You need to get out NOW."; }
+  else if (score >= 9)  { verdict.className='alert alert-danger';  verdict.textContent="💀 Major situationship danger zone. They're keeping you on a leash."; }
+  else if (score >= 6)  { verdict.className='alert alert-warn';    verdict.textContent="⚠️ Too many red flags to ignore. Have THE talk or walk."; }
+  else if (score >= 3)  { verdict.className='alert alert-warn';    verdict.textContent="🟡 Some warning signs. Watch the pattern over next 2 weeks."; }
+  else if (score >= 1)  { verdict.className='alert alert-success'; verdict.textContent="🟢 Minor issues. One honest convo can fix this."; }
+  else                  { verdict.className='alert alert-success'; verdict.textContent="💚 GREEN FOREST ENERGY 🌳 Protect this one at all costs!"; }
+
   document.getElementById('situ-results').classList.remove('hidden');
+}
+async function getTimeline() {
+  const score = Object.values(situAnswers).filter(v => v === 'Yes').length;
+  const flagged = SITU_QUESTIONS.filter(({key}) => situAnswers[key] === 'Yes').map(q => q.q);
+
+  const btn = document.getElementById('situ-timeline-btn');
+  btn.disabled = true; btn.textContent = '⏳ Seeing your future...';
+
+  const section = document.getElementById('situ-timeline-section');
+  const loading = document.getElementById('situ-timeline-loading');
+  const textEl  = document.getElementById('situ-timeline-text');
+
+  section.classList.remove('hidden');
+  loading.style.display = 'block';
+  textEl.style.display  = 'none';
+
+  try {
+    const res  = await fetch('http://localhost:8000/situationship-timeline', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ score, flagged_questions: flagged })
+    });
+    const data = await res.json();
+    loading.style.display = 'none';
+    textEl.style.display  = 'block';
+    textEl.textContent    = data.prediction;
+  } catch(e) {
+    loading.style.display   = 'none';
+    textEl.style.display    = 'block';
+    textEl.textContent      = 'Backend offline 💀';
+  }
+  btn.disabled = false; btn.textContent = '🔮 Predict My Future';
+}
+
+async function getTalkScript() {
+  const score = Object.values(situAnswers).filter(v => v === 'Yes').length;
+  const flagged = SITU_QUESTIONS.filter(({key}) => situAnswers[key] === 'Yes').map(q => q.q);
+
+  const btn = document.getElementById('situ-talk-btn');
+  btn.disabled = true; btn.textContent = '⏳ Writing your script...';
+
+  const section  = document.getElementById('situ-script-section');
+  const loading  = document.getElementById('situ-script-loading');
+  const content  = document.getElementById('situ-script-content');
+
+  section.classList.remove('hidden');
+  loading.style.display  = 'block';
+  content.style.display  = 'none';
+
+  try {
+    const res  = await fetch('http://localhost:8000/situationship-talk-script', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ score, flagged_questions: flagged })
+    });
+    const data = await res.json();
+    loading.style.display = 'none';
+    content.style.display = 'flex';
+
+    const labels = {
+      opener:  '🗣️ How to Open',
+      main:    '💬 What to Say',
+      deflect: '🔄 If They Deflect',
+      gaslight:'🛡️ If They Gaslight',
+      closer:  '🚪 The Closing Line'
+    };
+
+    content.innerHTML = Object.entries(labels).map(([key, label]) => `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;">
+        <div style="font-family:'Syne',sans-serif;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">${label}</div>
+        <div style="font-size:0.88rem;line-height:1.6;color:var(--text);">${data[key] || ''}</div>
+      </div>
+    `).join('');
+  } catch(e) {
+    loading.style.display = 'none';
+    content.style.display = 'flex';
+    content.innerHTML = '<div class="alert alert-danger">Backend offline 💀</div>';
+  }
+  btn.disabled = false; btn.textContent = '💬 Generate The Talk Script';
 }
 
 // ============================================================
